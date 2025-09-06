@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Secure E-Voting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <div class="navbar">
+        <a style="color: yellow; padding: 2cm;" href="/">Home</a>
+        <a style="color: yellow; padding: 2cm;" href="/register">Register</a>
+    </div>
+
+    <div class="container">
+        <h1>Register to Vote</h1>
+
+        <div class="form-group">
+    <input type="text" id="full_name" placeholder="Full Name" required title="Must enter your full name">
+
+    <div class="inline-group">
+        <input type="number" id="ssn" placeholder="SSN" maxlength="10" minlength="10" required title="Must enter SSN">
+        <input type="number" id="phone" placeholder="Phone Number" maxlength="10" minlength="10" required title="Must enter phone number">
+    </div>
+
+    <input type="text" id="security_answer" placeholder="Security Answer" required title="Must enter security answer">
+</div>
+        <form onsubmit="event.preventDefault(); validateForm();">
+        <button onclick="registerUser()"  style="background-color: #0edee1; color: white;">Register</button>
+        </form>
+    </div>
+
+    <script>
+        function registerUser() {
+            let userData = {
+                full_name: document.getElementById("full_name").value,
+                ssn: document.getElementById("ssn").value,
+                phone: document.getElementById("phone").value,
+                security_answer: document.getElementById("security_answer").value
+            };
+    
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Shows either success or error popup based on the form we have given
+                Swal.fire({title: data.success ? "Registered!" : "Error",
+                text: data.message,
+                icon: data.success ? "success" : "error",
+                background: "#1a1a2e",
+                color: "#ffffff",
+                confirmButtonColor: "#ff0000",
+                confirmButtonText: "back!",
+                customclass: {
+                    popup: "usa-popup"
+                }
+            })
+                .then(() => {
+                    if (data.success) {
+                        // Redirects to the vote page if registration is successful else it will not respond
+                        window.location.href = '/vote';  // making the route for vote page is '/vote' so that in python file we can easily navigate
+                    }
+                });
+            });
+        }
+        function validateForm() {
+            let fullName = document.getElementById("full_name").value.trim();
+            let ssn = document.getElementById("ssn").value.trim();
+            let phone = document.getElementById("phone").value.trim();
+            let securityAnswer = document.getElementById("security_answer").value.trim();
+            
+            if (!fullName || !ssn || !phone || !securityAnswer) {
+            Swal.fire({
+                title: "Error",
+                text: "You must fill out all the fields!",
+                icon: "error",
+                background: "#1a1a2e",
+                color: "#ffffff",
+                confirmButtonColor: "#ff0000",
+                confirmButtonText: "OK"
+            });
+            return false; // Prevent the form submission if anyone of that not exist 
+        }
+   
+    
+        return true; // Proceeds with the form submission and validate
+    }   
+
+    </script>
+    
+
+</body>
+</html>
+

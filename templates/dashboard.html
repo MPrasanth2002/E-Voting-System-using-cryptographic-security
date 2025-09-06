@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Secure E-Voting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <div class="navbar">
+        <a style="color: yellow;" href="/">Home</a>
+        <a style="color: yellow;" href="/logout">Logout</a>
+    </div>
+
+    <section class="container">
+        <h1>Welcome, {{ voter.full_name }}!</h1>
+        <p>Phone: {{ voter.phone }}</p>
+
+        <h2>Vote for Your Party</h2>
+        <div class="parties">
+            <div class="party">
+                <img src="{{ url_for('static', filename='images/Republican.png') }}">
+                <h2>Republican Party</h2>
+                <button onclick ="vote('Republican')">Vote Republican</button>
+            </div>
+
+            <div class="party">
+                <img src="{{ url_for('static', filename='images/Democratic.jpeg') }}">
+                <h2>Democratic Party</h2>
+                <button onclick="vote('Democratic')">Vote Democratic</button>
+            </div>
+
+            <div class="party">
+                <img src="{{ url_for('static', filename='images/nota.png') }}">
+                <h2>NOTA</h2>
+                <button onclick="vote('NOTA')">Vote NOTA</button>
+            </div>
+    </section>
+
+    <script>
+        function vote(party) {
+            fetch('/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ party })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire(data.success ? "Vote Casted!" : "Error", data.message, data.success ? "success" : "error");
+            });
+        }
+    </script>
+
+</body>
+</html>

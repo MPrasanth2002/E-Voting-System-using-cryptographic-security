@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure E-Voting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!--for Popup Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- it is a Navigation Bar -->
+    <div class="navbar">
+        <a style="color: yellow; padding: 2cm;" href="/">Home</a>
+        <a style="color: yellow; padding: 2cm;" href="/register">Register</a>
+        <a style="color: yellow; padding: 2cm;" href="/main"> Main Page</a>
+    </div>
+
+    <div class="container">
+        <h1>Welcome to the Secure U.S. E-Voting System</h1> <!--for user login page for voting-->
+
+        
+        <div class="login-box">
+            <h3>Login to Vote</h3>
+            <input type="text" id="ssn" placeholder="Enter Your SSN">
+            <br><br>
+            <input type="password" id="security_answer" placeholder="Security Answer">
+            <br><br>
+
+            <button style="background-color: #0edee1; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; width: 100%;" onclick="loginToVote()">Login</button>
+        </div>
+
+        <div class="parties">
+            <div class="party">
+                <img src="{{ url_for('static', filename='images/Republican.png') }}">
+                <h2>Republican Party</h2>
+                <button style="background-color: #0edee1; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; width: 100%;" onclick ="vote('Republican')">Vote Republican</button>
+            </div>
+
+            <div class="party">
+                <img src="{{ url_for('static', filename='images/Democratic.jpeg') }}">
+                <h2>Democratic Party</h2>
+
+                <button style="background-color: #0edee1; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; width: 100%;" onclick="vote('Democratic')">Vote Democratic</button>
+            </div>
+
+            <div class="party">
+                <img src="{{ url_for('static', filename='images/nota.png') }}">
+                <h2>NOTA</h2>
+                <button style="background-color: #0edee1; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; width: 100%;" onclick="vote('NOTA')">Vote NOTA</button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script>
+        console.log("hii ! checking whether if vote data loads correctly or not...............");
+        function loginToVote() {
+        let ssn = document.getElementById("ssn").value;
+        let security_answer = document.getElementById("security_answer").value;
+
+        fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({ ssn, security_answer })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire("Login Successful", "You can now vote!", "success").then(() => {
+                    window.location.href = "/dashboard";  // Redirects it to dashboard.html
+                });
+            } else {
+                Swal.fire("Error", data.message, "error");
+                
+            }
+        });
+    }
+
+        function vote(party) {
+            fetch('/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify({ party })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({title: data.success ? "Vote Casted!" : "Error",
+                text: data.message,
+                icon: data.success ? "success" : "error",
+                background: "#1a1a2e",
+
+                color: "#ffffff",
+                confirmButtonColor: "#ff0000",
+                confirmButtonText: "Back",
+                customclass: {
+                    popup: "usa-popup"
+                }
+            }
+        );
+            });
+        }
+    </script>
+<div class="results">
+    <h2 style="color: red;">Current Voting Results</h2>
+
+    <p style="color: red;"><strong style="color: rgb(252, 1, 1);">Total Votes:</strong> <span id="totalVotes", style="color: gold;">0</span></p>
+    
+    <div id="partyResults"></div>
+</div>
+
+
+<script>
+    function getvotingstats() {
+        fetch('/vote-results')
+
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalVotes').innerText = data.total_votes;
+            
+            let resultsHTML = '';
+
+            for (let party in data.party_counts) {
+                resultsHTML += `<p><strong>${party}:</strong> ${data.party_counts[party]} votes (${data.party_percentages[party]}%)</p>`;
+            }
+            document.getElementById('partyResults').innerHTML = resultsHTML;
+        });
+    }
+
+    // Fetchs results when the page is loading or when it loads
+    getvotingstats();
+</script>
+
+</body>
+</html>
+
